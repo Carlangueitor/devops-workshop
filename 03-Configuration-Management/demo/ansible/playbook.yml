@@ -1,6 +1,12 @@
 ---
 - hosts: all
   become: yes
+  vars:
+    postgresql_databases:
+      - name: todo
+  roles:
+    - { role: ANXS.postgresql }
+
   tasks:
 
   # Es el equivalente de ejecutar manualmente `apt-get update`
@@ -11,3 +17,27 @@
   # Equivalente a `apt-get install nginx`
   - name: "Instalar servidor web"
     apt: name=nginx state=present
+
+  - name: "Instalar más paquetes"
+    apt: name={{ item }} state=present
+    with_items:
+      - git
+      - vim
+      - zsh
+
+  - name: "Asegura que el repositorio esté actualizado"
+    git:
+      repo: https://github.com/tastejs/todomvc.git
+      dest: /var/www/todo
+
+  - name: "Asegura que la configuración de nginx sea correcta"
+    copy:
+      src: conf/nginx/default.conf
+      dest: /etc/nginx/sites-enabled/default.conf
+    register: nginx_config_file
+
+  - name: "Asegura que nginx se reinicie cuando la configuración cambie"
+    service:
+      name: nginx
+      state: restarted
+    when: nginx_config_file.changed 
