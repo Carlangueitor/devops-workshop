@@ -1,0 +1,13 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+
+  # Es el equivalente de ejecutar manualmente `apt-get update`
+  - name: "Actualizar la lista de repositorios"
+    apt:
+      update_cache: yes
+
+  # Equivalente a `apt-get install nginx`
+  - name: "Instalar servidor web"
+    apt: name=nginx state=present
